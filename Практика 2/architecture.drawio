@@ -1,0 +1,38 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="rag-arch">
+    <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="N1" value="Регламенты&#10;(PDF, DOCX, TXT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="40" y="160" width="160" height="60" as="geometry"/></mxCell>
+        <mxCell id="N2" value="MinIO&#10;(хранилище файлов)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="260" y="160" width="160" height="60" as="geometry"/></mxCell>
+        <mxCell id="N3" value="Разбор файлов,&#10;разбиение на части" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="480" y="160" width="170" height="60" as="geometry"/></mxCell>
+        <mxCell id="N4" value="Векторизация&#10;(embedding)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="710" y="160" width="160" height="60" as="geometry"/></mxCell>
+        <mxCell id="N5" value="Qdrant&#10;(поиск по смыслу, HNSW)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="930" y="70" width="190" height="60" as="geometry"/></mxCell>
+        <mxCell id="N6" value="BM25&#10;(поиск по словам)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="930" y="250" width="190" height="60" as="geometry"/></mxCell>
+        <mxCell id="N7" value="Ollama&#10;(ответ модели)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="1180" y="160" width="170" height="60" as="geometry"/></mxCell>
+        <mxCell id="N8" value="Сотрудник" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="1420" y="160" width="150" height="60" as="geometry"/></mxCell>
+        <mxCell id="E0" value="загрузка файлов" style="html=1;" edge="1" parent="1" source="N1" target="N2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E1" value="скачивание" style="html=1;" edge="1" parent="1" source="N2" target="N3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E2" value="части текста" style="html=1;" edge="1" parent="1" source="N3" target="N4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E3" value="сохранение векторов" style="html=1;" edge="1" parent="1" source="N4" target="N5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E4" value="сохранение текста" style="html=1;" edge="1" parent="1" source="N3" target="N6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E5" value="вопрос" style="html=1;" edge="1" parent="1" source="N8" target="N4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E6" value="найденные части" style="html=1;" edge="1" parent="1" source="N5" target="N7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E7" value="найденные части" style="html=1;" edge="1" parent="1" source="N6" target="N7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="E8" value="ответ" style="html=1;" edge="1" parent="1" source="N7" target="N8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="legend-title" value="Легенда:" style="text;html=1;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="360" width="100" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-box-source" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="40" y="390" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-text-source" value="документы / хранилище" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="68" y="390" width="240" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-box-process" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="320" y="390" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-text-process" value="обработка текста" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="348" y="390" width="240" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-box-search" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="600" y="390" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-text-search" value="поиск" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="628" y="390" width="240" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-box-gen" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="880" y="390" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-text-gen" value="модель, генерация ответа" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="908" y="390" width="240" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-box-client" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="1160" y="390" width="20" height="20" as="geometry"/></mxCell>
+        <mxCell id="legend-text-client" value="пользователь" style="text;html=1;align=left;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="1188" y="390" width="240" height="20" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

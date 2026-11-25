@@ -1,0 +1,149 @@
+services:
+  minio:
+    image: pgsty/silo:RELEASE.2026-09-03T13-18-01Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9010:9000"
+      - "9011:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - rag
+
+  minio-init:
+    image: pgsty/silo:RELEASE.2026-09-03T13-18-01Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        mc alias set local http://minio:9000 minioadmin minioadmin &&
+        mc mb --ignore-existing local/regulations &&
+        mc mirror --overwrite /docs local/regulations
+    volumes:
+      - ./docs:/docs:ro
+    networks:
+      - rag
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6343:6333"
+      - "6344:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - rag
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11444:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - model_files:/models
+    networks:
+      - rag
+
+  # Реестр Ollama отдаёт веса моделей через CDN на базе Cloudflare R2
+  # (*.r2.cloudflarestorage.com). В сети, где разворачивался стенд, этот
+  # хост не резолвится (DNS отдаёт заведомо недостижимый адрес), поэтому
+  # `ollama pull` не работает. Обходной путь: скачиваем GGUF с HuggingFace
+  # напрямую и регистрируем модель локально через `ollama create`.
+  model-download:
+    image: curlimages/curl:latest
+    user: "0"
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        curl -L --fail -o /models/model.gguf \
+          "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf" &&
+        printf 'FROM /models/model.gguf\n' > /models/Modelfile
+    volumes:
+      - model_files:/models
+    networks:
+      - rag
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_started
+      model-download:
+        condition: service_completed_successfully
+    environment:
+      OLLAMA_HOST: ollama:11434
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        until ollama list >/dev/null 2>&1; do sleep 2; done
+        ollama create qwen2.5-1.5b-gguf -f /models/Modelfile
+    volumes:
+      - model_files:/models:ro
+    restart: "no"
+    networks:
+      - rag
+
+  rag-ingest:
+    build: ./ingest
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+      qdrant:
+        condition: service_started
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_BUCKET: regulations
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: regulations
+      CORPUS_PATH: /data/corpus.jsonl
+      EMBED_MODEL: paraphrase-multilingual-MiniLM-L12-v2
+    volumes:
+      - rag_data:/data
+    restart: "no"
+    networks:
+      - rag
+
+  rag-api:
+    build: ./api
+    depends_on:
+      rag-ingest:
+        condition: service_completed_successfully
+      ollama-pull:
+        condition: service_completed_successfully
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: regulations
+      CORPUS_PATH: /data/corpus.jsonl
+      EMBED_MODEL: paraphrase-multilingual-MiniLM-L12-v2
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen2.5-1.5b-gguf
+    volumes:
+      - rag_data:/data:ro
+    ports:
+      - "8010:8000"
+    networks:
+      - rag
+
+networks:
+  rag:
+
+volumes:
+  minio_data:
+  qdrant_data:
+  ollama_data:
+  model_files:
+  rag_data:
